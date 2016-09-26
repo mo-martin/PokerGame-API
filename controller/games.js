@@ -56,5 +56,5 @@ function createCards()
 
 module.exports = 
 {
-    new : newGame
+    create : newGame
 }

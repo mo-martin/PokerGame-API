@@ -6,7 +6,7 @@ function newGame(req,res)
     console.log("starting new game");
     var defaultState = 
     {
-        Deck: createCards()
+        deck: createCards()
     }
     Game.create(defaultState,function(err,result)
     {
@@ -15,6 +15,47 @@ function newGame(req,res)
         
     });
 
+}
+
+function shuffleDeck(req,res) {
+    //get the deck using the id
+    Game.findById(req.params.id, function(err, result) {
+        if (err) console.log(err);
+        //shuffle the deck
+        var newDeck = shuffle(result.deck);
+
+        //update the game
+        Game.findByIdAndUpdate(req.params.id, {
+                $set: {deck: newDeck}
+            }, {
+                new: true
+            }, function(err, game) {
+                if(err) console.log(err);
+                res.status(200).json(true);
+                console.log(game);
+        });
+    });
+}
+
+function shuffle(arrayToShuffle) {
+//shuffles the deck
+    var array = arrayToShuffle;
+
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        var randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        var temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+    return array;
 }
 
 function createCards()
@@ -58,5 +99,6 @@ function createCards()
 
 module.exports = 
 {
-    create : newGame
+    create : newGame,
+    shuffle: shuffleDeck
 }

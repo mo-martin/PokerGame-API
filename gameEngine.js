@@ -11,12 +11,14 @@ function takeBet(BetInfo)
         result.player[BetInfo.pid].bet = BetInfo.bet;
         result.player[BetInfo.pid].cash -= BetInfo.bet;
         result.pot += BetInfo.bet;
-        
+
     });
 }
-function payOut()
+function payOut(winnerArray)
 {
     //get an integer with which player won
+    if(winnerArray.length == 1 )
+        
     //special payout conditions
 
     //need to check for an all in bet

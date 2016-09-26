@@ -4,6 +4,6 @@ var gameController = require('../controller/games');
 
 router.route('/Deck/new').get(gameController.create);
 
-router.route('/Deck/shuffle/:id').get(gameController.shuffle);
+router.route('/Deck/:id/shuffle').get(gameController.shuffle);
 
 module.exports = router;

@@ -17,7 +17,8 @@ function newGame(req,res)
 
 }
 
-function shuffleDeck(req,res) {
+function shuffleDeck(req,res) 
+{
     //get the deck using the id
     Game.findById(req.params.id, function(err, result) {
         if (err) console.log(err);
@@ -27,17 +28,15 @@ function shuffleDeck(req,res) {
         //update the game
         Game.findByIdAndUpdate(req.params.id, {
                 $set: {deck: newDeck}
-            }, {
-                new: true
             }, function(err, game) {
                 if(err) console.log(err);
                 res.status(200).json(true);
-                console.log(game);
         });
     });
 }
 
-function shuffle(arrayToShuffle) {
+function shuffle(arrayToShuffle) 
+{
 //shuffles the deck
     var array = arrayToShuffle;
 
@@ -47,11 +46,11 @@ function shuffle(arrayToShuffle) {
     while (0 !== currentIndex) {
 
         // Pick a remaining element...
-        var randomIndex = Math.floor(Math.random() * currentIndex);
+        randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex -= 1;
 
         // And swap it with the current element.
-        var temporaryValue = array[currentIndex];
+        temporaryValue = array[currentIndex];
         array[currentIndex] = array[randomIndex];
         array[randomIndex] = temporaryValue;
     }

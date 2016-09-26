@@ -45,8 +45,9 @@ function createCards()
         //for each number and face cards
         for (var j = 1; j <=13; j++){
             var card = {
-                        Suit : suit,
-                        Value : j  };
+                Suit : suit,
+                Value : j  
+            };
         }
         //add to array
         newDeck.push(card);

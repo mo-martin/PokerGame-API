@@ -8,10 +8,10 @@ function newGame(req,res)
     {
         Deck: createCards()
     }
-    Game.Create(defaultState,function(err,result)
+    Game.create(defaultState,function(err,result)
     {
         if(err) console.log(err);
-        res.status(201).json(result);
+        res.status(201).json(result._id);
         
     });
 
@@ -47,9 +47,10 @@ function createCards()
             var card = {
                         Suit : suit,
                         Value : j  };
+                        newDeck.push(card);
         }
         //add to array
-        newDeck.push(card);
+        
     }
     return newDeck;
 }

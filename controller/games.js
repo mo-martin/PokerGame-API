@@ -49,11 +49,12 @@ function shuffleDeck(req,res) {
         var newDeck = shuffle(result.deck);
 
         //update the game
-        Game.findByIdAndUpdate(req.params.id, {
-                $set: {deck: newDeck}
-            }, function(err, game) {
+        Game.findByIdAndUpdate(req.params.id, 
+            {$set: {deck: newDeck}},
+            {new: true},
+            function(err, game) {
                 if(err) console.log(err);
-                res.status(200).json(true);
+                res.status(200).json(game);
         });
     });
 }

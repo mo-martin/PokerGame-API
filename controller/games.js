@@ -6,7 +6,6 @@ function newGame(req,res)
     var defaultState = 
     {
         deck: createCards(),
-        gameState: 0,
         players: newPlayers()
     };
     Game.create(defaultState,function(err,result)
@@ -16,10 +15,8 @@ function newGame(req,res)
             id: result._id,
             players: result.players
         }
-        res.status(201).json(data);
-        
+        res.status(201).json(data); 
     });
-
 }
 
 function newPlayers() {
@@ -38,14 +35,13 @@ function newPlayers() {
     return players;
 }
 
-function deckDealCards(req, res)
-{
-    gameEngine.deal(req.params.id);
-    res.status(200).json(true);
+function deckDealCards(req, res) {
+    gameEngine.deal(req.params.id, function(data) {
+        res.status(200).json(data);
+    });
 }
 
-function shuffleDeck(req,res) 
-{
+function shuffleDeck(req,res) {
     //get the deck using the id
     Game.findById(req.params.id, function(err, result) {
         if (err) console.log(err);

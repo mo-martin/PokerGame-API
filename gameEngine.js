@@ -26,6 +26,8 @@ dealCards = function(id, callback) {
 			case 4:
 				//deal the river
 				dealToBoard(result, 1);
+				//find winner
+				//reset game
 				break;
 			default:
 				//if db validation works this state is unreachable

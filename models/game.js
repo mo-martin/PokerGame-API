@@ -15,6 +15,8 @@ var GameSchema = new mongoose.Schema(
     players: [PlayerSchema],
     burnPile: {type: Array, default: []},
     boardPile: {type: Array, default: []}
+    pot : {type : Number, required : true},
+    curBet : {type : Number, required : true}
 });
 
 module.exports = mongoose.model("Game",GameSchema);

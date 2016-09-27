@@ -1,12 +1,12 @@
 var Game = require('../models/game');
-
+var gameEngine = require('../gameEngine');
 
 function newGame(req,res)
 {
-    console.log("starting new game");
     var defaultState = 
     {
-        deck: createCards()
+        deck: createCards(),
+        gameState: 0
     }
     Game.create(defaultState,function(err,result)
     {
@@ -15,6 +15,12 @@ function newGame(req,res)
         
     });
 
+}
+
+function deckDealCards(req, res)
+{
+    gameEngine.deal(req.params.id);
+    res.status(200).json(true);
 }
 
 function shuffleDeck(req,res) 
@@ -99,5 +105,6 @@ function createCards()
 module.exports = 
 {
     create : newGame,
-    shuffle: shuffleDeck
+    shuffle : shuffleDeck,
+    deal : deckDealCards
 }

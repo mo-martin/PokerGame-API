@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 
 var PlayerSchema = new mongoose.Schema({
+	id: {type: Number},
 	hand: {type : Array},
 	chips: {type : Number},
 	bet: {type : Number},

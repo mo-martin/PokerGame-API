@@ -6,15 +6,36 @@ function newGame(req,res)
     var defaultState = 
     {
         deck: createCards(),
-        gameState: 0
-    }
+        gameState: 0,
+        players: newPlayers()
+    };
     Game.create(defaultState,function(err,result)
     {
         if(err) console.log(err);
-        res.status(201).json(result._id);
+        var data = {
+            id: result._id,
+            players: result.players
+        }
+        res.status(201).json(data);
         
     });
 
+}
+
+function newPlayers() {
+    var players = [];
+    var defaultPlayer;
+    for (var i = 1; i <= 5; i++) {
+        defaultPlayer = {
+            id: i,
+            hand: [],
+            chips: 5000,
+            bet: 0,
+            hasFolded: false
+        };
+        players.push(defaultPlayer);
+    }
+    return players;
 }
 
 function deckDealCards(req, res)

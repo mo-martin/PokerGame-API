@@ -11,5 +11,6 @@ router.route('/Deck/:id/shuffle').get(gameController.shuffle);
 
 //player controller
 router.route('/game/:gameId/player/:playerId/fold').get(playerController.fold);
+router.route('/game/:gameId/player/:playerId/:bet').get(playerController.bet);
 
 module.exports = router;

@@ -2,30 +2,30 @@ var Game = require('./models/game');
 
 dealCards = function(id, callback) {
 	//uses game state to deal cards
-	Game.findById(id, function(err, result) {
+	Game.findById(id, function(err, game) {
 		if (err) console.log(err);
-		switch(result.gameState) {
+		switch(game.gameState) {
 			case 1:
 				//deal all players two cards
-				dealToPlayers(result);
+				dealToPlayers(game);
 				//change the game state
-				result.gameState = 2;
+				game.gameState = 2;
 				break;
 			case 2:
 				//deal three cards the flop
-				dealToBoard(result, 3);
+				dealToBoard(game, 3);
 				//change the game state
-				result.gameState = 3;
+				game.gameState = 3;
 				break;
 			case 3:
 				//deal the turn
-				dealToBoard(result, 1);
+				dealToBoard(game, 1);
 				//change the game state
-				result.gameState = 4;
+				game.gameState = 4;
 				break;
 			case 4:
 				//deal the river
-				dealToBoard(result, 1);
+				dealToBoard(game, 1);
 				//find winner
 				//reset game
 				break;
@@ -34,17 +34,12 @@ dealCards = function(id, callback) {
 				console.log("game state error");
 		};
 		//update database
-		Game.findByIdAndUpdate(id, {$set : {
-			players: result.players,
-			boardPile: result.boardPile,
-			gameState: result.gameState
-		}},{
-			new: true
-		}, function(err, result) {
+		game.save(function(err, gameSaved) {
+			if (err) console.log(err);
 			//return deal data
 			var data = {
-				players: result.players,
-				boardPile: result.boardPile
+				players: gameSaved.players,
+				boardPile: gameSaved.boardPile
 			};
 			return callback(data);
 		});

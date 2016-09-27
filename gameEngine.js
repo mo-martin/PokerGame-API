@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 var Game = require('./models/game');
 
 dealCards = function(id, callback) {

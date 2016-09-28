@@ -100,17 +100,11 @@ function getHandValue(PlayerHand, BoardHand,callback)
     for(var c in BoardHand)
         mergedhand.push(BoardHand[c]);
     mergedhand.push(PlayerHand[0],PlayerHand[1]);
+    console.log(mergedhand);
     var value = 0;
     // we keep separate instances of both hands for the special cases in checks
-       value = testRoyalFlush(PlayerHand, BoardHand);
-    //    console.log(value);
-    if(value != 0 )
-        return callback(value);
-
-    // if(testRoyalFlush(mergedhand)) return testRoyalFlush(mergedhand);
-
-    value = testStraightFlush(mergedhand);
-    //console.log(value);
+    value = testStraightFlush(PlayerHand, BoardHand);
+    console.log(value);
     if(value != 0 )
         return callback(value);        
     value = test4ofKind(mergedhand);
@@ -145,7 +139,7 @@ function getHandValue(PlayerHand, BoardHand,callback)
     //console.log(value);
 }
 // complete - needs test
-function testRoyalFlush(PlayerHand, BoardHand)
+function testStraightFlush(PlayerHand, BoardHand)
 {
     var hand = [];
     for(var c in BoardHand)
@@ -167,21 +161,24 @@ function testRoyalFlush(PlayerHand, BoardHand)
         {
             var correctsuit = hand[i].suit;
             for(var j = 0; j < hand.length; ++j)
+            {
                 if(hand[j].suit != correctsuit)
                 {
                     hand.splice(j,1);
                     j--;
                 }
-            return 10; 
+                
+            }
+            // if it is a straight , its royal
+            if(testStraight(hand) == 5.14)
+                return 10;
+            else if (testStraight(hand) != 0)
+                return testStraight(hand)+4;
+            else
+                return 0;
         }
     }
     return 0;
-}
-// incomplete
-function testStraightFlush(hand)
-{
-    if(testStraight(hand) && testFlush(hand))
-        return true;
 }
 // complete - needs test
 function test4ofKind(hand)
@@ -266,7 +263,9 @@ function testStraight(hand)
     var scores = [];
     for(var i = 0; i < hand.length; ++i)
         scores.push(getCardValue(hand[i]));
-    scores.sort(function(a,b){return a>b  ? 1 : -1});
+    console.log(scores);
+    scores.sort(function(a,b){return a>b  ? -1 : 1});
+    console.log(scores);
     var straightCounter = 0;
     for(var i = 0 ; i < hand.length-1; ++i)
     {
@@ -276,7 +275,7 @@ function testStraight(hand)
             straightCounter=0;
         if(straightCounter == 4)
         {
-            var HC = scores[i-4]/100;
+            var HC = scores[i-3]/100;
             return 5 + HC;
         }
     }

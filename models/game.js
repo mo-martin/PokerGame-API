@@ -21,7 +21,7 @@ var GameSchema = new mongoose.Schema(
     expiresAt: {type: Date}
 });
 
-GameSchema.index({ "expiresAt": 1 }, { expireAfterSeconds: 0 });
+//GameSchema.index({ "expiresAt": 1 }, { expireAfterSeconds: 0 });
 
 GameSchema.pre("save", function(next) { 
     this.updatedAt = new Date();

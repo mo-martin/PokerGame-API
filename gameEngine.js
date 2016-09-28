@@ -97,36 +97,42 @@ function getHandValue(PlayerHand, BoardHand,callback)
     var mergedhand = [];
     // mergedhand = PlayerHand;
     // mergedhand.concat(BoardHand);
+    console.log(mergedhand);
     for(var c in BoardHand)
         mergedhand.push(BoardHand[c]);
     mergedhand.push(PlayerHand[0],PlayerHand[1]);
+    console.log(mergedhand);
     var value = 0;
     
     // we keep separate instances of both hands for the special cases in checks
     if(testStraightFlush(PlayerHand, BoardHand) != 0 )
         return callback(testStraightFlush(PlayerHand, BoardHand));      
-    value = test4ofKind(mergedhand);
+    value = test4ofKind(mergedhand.slice(0));
     if(value != 0 )
         return callback(value);
-    value = testFullHouse(mergedhand);
+    value = testFullHouse(mergedhand.slice(0));
     if(value != 0 )
         return callback(value);
+        console.log(mergedhand);    
     value = testFlush(PlayerHand, BoardHand);
     if(value != 0 )
-        return callback(value);        
-    value = testStraight(mergedhand);
-    if(value != 0 )
-        return callback(value);        
-    value = test3ofKind(mergedhand);
-    if(value != 0 )
-        return callback(value);        
-    value = test2Pair(mergedhand);
-    if(value != 0 )
-        return callback(value);        
-    value = testPair(mergedhand);
+        return callback(value);
+        console.log(mergedhand.slice(0));           
+    value = testStraight(mergedhand.slice(0));
     if(value != 0 )
         return callback(value);
-    return testHighCard(mergedhand);
+        console.log(mergedhand.slice(0));    
+    value = test3ofKind(mergedhand.slice(0));
+    if(value != 0 )
+        return callback(value);        
+    value = test2Pair(mergedhand.slice(0));
+    if(value != 0 )
+        return callback(value);        
+    value = testPair(mergedhand.slice(0));
+    if(value != 0 )
+        return callback(value);
+    console.log("high card");
+    return callback(1+testHighCard(mergedhand.slice(0))/100);
 }
 // complete
 function testStraightFlush(PlayerHand, BoardHand)
@@ -210,7 +216,7 @@ function testFullHouse(hand)
         if(hand[i].value == hand[i+1].value)
         {            
             var T = getCardValue(hand[i])/10000;
-            return 8+K+T;    
+            return 7+K+T;    
         }
     return 0;
 }
@@ -243,37 +249,23 @@ function testFlush(PlayerHand, BoardHand)
             return 6 + testHighCard(BoardHand)/100 + testHighCard(PlayerHand)/10000; 
         }
     }
-    //then we need the highest value card of suit from player hand
-
-    // for(var i = 0; i < hand.length; ++i)
-    // {
-    //     suitcounter = 0;
-        
-    //     for(var j = 0; j < hand.length; ++j)
-    //         if(hand[i].suit == hand[j].suit)
-    //             suitcounter++;
-    //         if(suitcounter >= 4)
-    //             return 6 + testHighCard(PlayerHand)/100;
-    // }
-    // return 0;
+    return 0;
 }
 // complete
 function testStraight(hand)
 {
-    var scores = [];
-    for(var i = 0; i < hand.length; ++i)
-        scores.push(getCardValue(hand[i]));
-    scores.sort(function(a,b){return a>b  ? -1 : 1});
+    hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
     var straightCounter = 0;
     for(var i = 0 ; i < hand.length-1; ++i)
     {
-        if(scores[i] == (scores[i+1]+1))
+        if(hand[i].value == (hand[i+1].value+1))
             straightCounter++;
         else
             straightCounter=0;
+        console.log(straightCounter);
         if(straightCounter == 4)
         {
-            var HC = scores[i-3]/100;
+            var HC = getCardValue(hand[i-3])/100;
             return 5 + HC;
         }
     }
@@ -282,17 +274,19 @@ function testStraight(hand)
 // complete
 function test3ofKind(hand)
 {
+    console.log("3ofKind");
+    hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
+    console.log(hand);
      for(var i = 0; i < hand.length-2; ++i)
-        for(var j = i+1; j < hand.length-1; ++j)
-            for(var p = j+1; p < hand.length; ++p )
-            if(hand[i].value == hand[j].value && hand[j].value == hand[p].value)
-             {
-                hand.splice(i,1);
-                hand.splice(j,1);
-                hand.splice(p,1);
-                var HC = testHighCard(hand)/100;
-                return 4+HC;    
-            }
+     {
+        if(hand[i].value == hand[i+1].value && hand[i+1].value == hand[i+2].value)
+        {
+            var HC = getCardValue(hand[i])/100;
+            hand.splice(i,3);
+            return 4+HC+getHandValue(hand)/10000;    
+        }
+     }
+    console.log("3ofKindFaild");
     return 0;
 }
 // complete
@@ -335,6 +329,7 @@ function testHighCard(hand)
     for(var i =0 ; i < hand.length; i++)
         if(getCardValue(hand[i]) > highvalue )
             highvalue = (getCardValue(hand[i]));
+    console.log(highvalue);
     return highvalue;
 }
 

@@ -121,10 +121,18 @@ function createCards()
     }
     return newDeck;
 }
-
+function testCardValues(req,res)
+{
+    //console.log(req.body.Phand);
+    gameEngine.HandValue(req.body.Phand,req.body.Dhand,function(data){
+        res.status(202).json(data);
+    });
+    
+}
 module.exports = 
 {
     create : newGame,
     shuffle : shuffleDeck,
-    deal : deckDealCards
+    deal : deckDealCards,
+    testCard : testCardValues
 }

@@ -20,3 +20,5 @@ mongoose.connect('mongodb://192.10.10.200/Poker', function(){
 app.listen(port, function() {
   console.log("Express app is listening on port: " + port);
 });
+
+module.exports = app;

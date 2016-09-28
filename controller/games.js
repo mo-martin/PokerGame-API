@@ -126,10 +126,23 @@ function testCardValues(req,res)
     });
     
 }
+
+function getCards(req, res) {
+    Game.findById(req.params.id, function(err, result) {
+        if (err) console.log(err);
+        var data = {
+            players: result.players,
+            boardPile: result.boardPile
+        }
+        res.status(200).json(data);
+    });
+}
+
 module.exports = 
 {
     create : newGame,
     shuffle : shuffleDeck,
     deal : deckDealCards,
-    testCard : testCardValues
+    testCard : testCardValues,
+    getCards: getCards
 }

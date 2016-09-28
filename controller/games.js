@@ -3,7 +3,7 @@ var gameEngine = require('../gameEngine');
 
 function newGame(req,res)
 {
-    var defaultState = 
+    var defaultState =
     {
         deck: createCards(),
         players: newPlayers()
@@ -15,7 +15,7 @@ function newGame(req,res)
             id: result._id,
             players: result.players
         }
-        res.status(201).json(data); 
+        res.status(201).json(data);
     });
 }
 
@@ -49,7 +49,7 @@ function shuffleDeck(req,res) {
         var newDeck = shuffle(result.deck);
 
         //update the game
-        Game.findByIdAndUpdate(req.params.id, 
+        Game.findByIdAndUpdate(req.params.id,
             {$set: {deck: newDeck}},
             {new: true},
             function(err, game) {
@@ -59,7 +59,7 @@ function shuffleDeck(req,res) {
     });
 }
 
-function shuffle(arrayToShuffle) 
+function shuffle(arrayToShuffle)
 {
 //shuffles the deck
     var array = arrayToShuffle;
@@ -90,32 +90,32 @@ function createCards()
         //set suit
         switch(i){
             case 0:
-                suit = "Spades"
+                suit = "S" //Spades
             break;
             case 1:
-                suit = "Hearts"
+                suit = "H" //Hearts
             break;
             case 2:
-                suit = "Clubs"
+                suit = "C" //Clubs
             break;
             case 3:
-                suit = "Diamonds"
+                suit = "D" //Diamonds
             break;
             //default should be un-reachable
             default:
-                suit = "HOW?!"
+                suit = "Kermit the Frog iz d4 m4n"
             break;
         }
         //for each number and face cards
         for (var j = 1; j <=13; j++){
             var card = {
                 Suit : suit,
-                Value : j  
+                Value : j
             };
             newDeck.push(card);
         }
         //add to array
-        
+
     }
     return newDeck;
 }
@@ -124,12 +124,25 @@ function testCardValues(req,res)
     gameEngine.HandValue(req.body.Phand,req.body.Dhand,function(data){
         res.status(202).json(data);
     });
-    
+
 }
-module.exports = 
+
+function getCards(req, res) {
+    Game.findById(req.params.id, function(err, result) {
+        if (err) console.log(err);
+        var data = {
+            players: result.players,
+            boardPile: result.boardPile
+        }
+        res.status(200).json(data);
+    });
+}
+
+module.exports =
 {
     create : newGame,
     shuffle : shuffleDeck,
     deal : deckDealCards,
-    testCard : testCardValues
+    testCard : testCardValues,
+    getCards: getCards
 }

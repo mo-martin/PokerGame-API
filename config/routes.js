@@ -5,9 +5,8 @@ var playerController = require('../controller/players');
 
 
 router.route('/Deck/new').get(gameController.create);
-
+router.route('/Deck/:id/cards').get(gameController.getCards);
 router.route('/Deck/:id/deal').get(gameController.deal);
-
 router.route('/Deck/:id/shuffle').get(gameController.shuffle);
 
 //player controller

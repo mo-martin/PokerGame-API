@@ -5,8 +5,9 @@ var gameEngine = require('../gameEngine');
 function fold(req, res) {
 	//find game
 	Game.findById(req.params.gameId, function(err, game) {
+		var id = req.params.playerId - 1;
 		//update player
-		game.players[req.params.playerId-1].hasFolded = true;
+		game.players[id].hasFolded = true;
 		//update game in database
 		game.save(function(err, savedGame) {
 				if (err) console.log(err);

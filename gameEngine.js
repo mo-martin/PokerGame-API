@@ -11,19 +11,283 @@ function takeBet(BetInfo)
         result.player[BetInfo.pid].bet = BetInfo.bet;
         result.player[BetInfo.pid].cash -= BetInfo.bet;
         result.pot += BetInfo.bet;
-
     });
 }
-function payOut(winnerArray)
+function getWinner(GameID)
+{
+    var handStrength = [];
+    Game.findById(GameID,function(err,result){
+        var baseHand = result.boardPile;
+        for(var i = 0; i < result.players.length; ++i)
+        {
+            if(result.players[i].action == "fold")
+                handStrength.push(0);
+            else
+                handStrength(getHandValue(result.players[i].hand,result.boardPile));
+        }
+    });
+    // we need to find any side pots,
+}
+function getHandValue(PlayerHand, BoardHand)
+{
+    var mergedhand = PlayerHand + BoardHand;
+    var value = 0;
+    // we keep separate instances of both hands for the special cases in checks
+       value = testRoyalFlush(mergedhand);
+    if(value != 0 )
+        return value;
+
+    if(testRoyalFlush(mergedhand)) return testRoyalFlush(mergedhand);
+
+    value = testStraightFlush(mergedhand);
+    if(value != 0 )
+        return value;        
+    value = test4ofKind(mergedhand);
+    if(value != 0 )
+        return value;        
+    value = testFullHouse(mergedhand);
+    if(value != 0 )
+        return value;        
+    value = testFlush(mergedhand);
+    if(value != 0 )
+        return value;        
+    value = testStraight(mergedhand);
+    if(value != 0 )
+        return value;        
+    value = test3ofKind(mergedhand);
+    if(value != 0 )
+        return value;        
+    value = test2Pair(mergedhand);
+    if(value != 0 )
+        return value;        
+    value = testPair(mergedhand);
+    if(value != 0 )
+        return value;
+    return testHighCard(mergedhand);
+}
+// complete - needs test
+function testRoyalFlush(PlayerHand, BoardHand)
+{
+    var hand = PlayerHand + BoardHand;
+    var suitcounter = 0;
+    // first we need to sort by suit
+    hand.sort(function(a,b){a.suit.localeCompare('b')});
+    // check if it is a flush
+    for(var i = 0 ; i < hand.length-1; ++i)
+    {
+        if(hand[i].suit == hand[i+1].suit)
+            suitcounter++;
+        else
+            suitcounter=0;
+        if(suitcounter==4)
+        {
+            var correctsuit = hand[i].suit;
+            for(var j = 0; j < hand.length; ++j)
+                if(hand[j].suit != correctsuit)
+                {
+                    hand.splice(j,1);
+                    j--;
+                }
+            return 10; 
+        }
+    }
+}
+// incomplete
+function testStraightFlush(hand)
+{
+    if(testStraight(hand) && testFlush(hand))
+        return true;
+}
+// complete - needs test
+function test4ofKind(hand)
+{
+    for(var i = 0; i < hand.length-3; ++i)
+        for(var j = i+1; j < hand.length-2; ++j)
+            for(var p = j+1; p < hand.length-1; ++p )
+                for(var k = p+1; k < hand.length; ++k )
+                    if(hand[i].value == hand[j].value && hand[j].value == hand[p].value && hand[p].value == hand[k].value)
+                    {
+                        hand.splice(i,4);
+                        var k = testHighCard(hand)/10000;
+                        var HC = getCardValue(hand[i])/100;
+                        return 8+HC+k;
+                    }
+}
+// complete
+function testFullHouse(hand)
+{
+    var scores = [];
+    var threefound = false;
+
+    hand.sort(function(a,b){return a.value>b.value  ? 1 : -1});
+    for(var i = 0; i < hand.length-2; ++i)
+        if(hand[i].value == hand[i+1].value && hand[i+1].value == hand[i+2].value)
+        {
+            scores.splice(i,3);
+            threefound = true;
+            break;
+        }
+
+    if(!threefound)
+        return 0;
+    for(var i =0; i < scores.length; ++i)
+        if(scores[i] == scores[i+1])
+        {
+            hand.splice(i,2);
+            var HC = testHighCard(hand)/100;
+            return 8+HC;    
+        }
+    return 0;
+}
+// complete - need testing
+function testFlush(PlayerHand, BoardHand)
+{
+    var hand = PlayerHand + BoardHand;
+    var suitcounter = 0;
+    // first we need to sort by suit
+    hand.sort(function(a,b){a.suit.localeCompare('b')});
+    // check if it is a flush
+    for(var i = 0 ; i < hand.length-1; ++i)
+    {
+        if(hand[i].suit == hand[i+1].suit)
+            suitcounter++;
+        else
+            suitcounter=0;
+        if(suitcounter==4)
+        {
+            return 6 + testHighCard(PlayerHand)/100; 
+        }
+    }
+    //then we need the highest value card of suit from player hand
+
+    // for(var i = 0; i < hand.length; ++i)
+    // {
+    //     suitcounter = 0;
+        
+    //     for(var j = 0; j < hand.length; ++j)
+    //         if(hand[i].suit == hand[j].suit)
+    //             suitcounter++;
+    //         if(suitcounter >= 4)
+    //             return 6 + testHighCard(PlayerHand)/100;
+    // }
+    // return 0;
+}
+// complete
+function testStraight(hand)
+{
+    var scores = [];
+    for(var i = 0; i < hand.length; ++i)
+        scores.push(getCardValue(hand[i]));
+    scores.sort(function(a,b){return a>b  ? 1 : -1});
+    var straightCounter = 0;
+    for(var i = 0 ; i < hand.length-1; ++i)
+    {
+        if(scores[i] == (scores[i+1]+1))
+            straightCounter++;
+        else
+            straightCounter=0;
+        if(straightCounter == 4)
+        {
+            var HC = scores[i-4]/100;
+            return 5 + HC;
+        }
+    }
+    return 0;
+}
+// complete
+function test3ofKind(hand)
+{
+     for(var i = 0; i < hand.length-2; ++i)
+        for(var j = i+1; j < hand.length-1; ++j)
+            for(var p = j+1; p < hand.length; ++p )
+            if(hand[i].value == hand[j].value && hand[j].value == hand[p].value)
+             {
+                hand.splice(i,1);
+                hand.splice(j,1);
+                hand.splice(p,1);
+                var HC = testHighCard(hand)/100;
+                return 4+HC;    
+            }
+    return 0;
+}
+// complete
+function test2Pair(hand)
+{
+    var HC = 0;
+    var pairincre = 0;
+    for(var i = 0; i < hand.length-1; ++i)
+        for(var j = i+1; j < hand.length; ++j)
+            if(hand[i].value == hand[j].value)
+               {
+                   pairincre++;
+                   if(testHighCard([hand[i],hand[i+1]])/100 > HC)
+                        HC = testHighCard([hand[i],hand[i+1]])/100;
+                   if(pairincre == 2)
+                        return 3+HC;
+               }
+    return 0;
+}
+// complete
+function testPair(hand)
+{
+    for(var i = 0; i < hand.length-1; ++i)
+        for(var j = i+1; j < hand.length; ++j)
+            if(hand[i].value == hand[j].value)
+                return 2 + getCardValue(hand[i])/100;
+    return 0;
+}
+// complete
+function getCardValue(card)
+{
+    if(card.value == 1)
+        return 14;
+    return card.value;
+}
+// complete
+function testHighCard(hand)
+{
+    var highvalue = 0;
+    for(var i =0 ; i < hand.length; i++)
+        if(getCardValue(hand[i]) > highvalue )
+            highvalue = (getCardValue(hand[i]));
+    return highvalue;
+}
+
+function payOut(winnerData)
 {
     //get an integer with which player won
-    if(winnerArray.length == 1 )
+    if(winnerData.winners.length == 1 )
+    {
+        // only one winner
+        Game.findById(winnerData.gameID, function(err,result){
+            result.players[winnerData.winners[0]].cash += result.pot;
+            endRound(winnerData.gameID);
+        });
+    }
+    else
+    {
+         //special payout conditions
+         //need to check for an all in bet / we check that in the get winner function
+         //if all in bet is not as high as the others , then cap their payout
+         Game.findById(winnerData.gameID,function(err,result){
+             for(var i = 0; i < winnerData.winners.length;++i)
+             {
+                 result.players[winnerData.winners[0]].bet
+             }
+         });
+    }
+}
+
+function endRound(gameID)
+{
+    // STUB !!!!!!!!!!!
+        console.log("STUB code hit gameEngine.js endRound function");
+    // Game.findById(winnerData.gameID, function(err,result){
         
-    //special payout conditions
+    // });
+}
 
-    //need to check for an all in bet
-    
-    //if all in bet is not as high as the others , then cap their payout
-    var cappedWinners = []
-
+module.exports = 
+{
+    HandValue : getHandValue
 }

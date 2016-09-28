@@ -6,9 +6,7 @@ function newGame(req,res)
     var defaultState = 
     {
         deck: createCards(),
-        players: newPlayers(),
-        updatedAt: Date.now(),
-        expiresAt: new Date(new Date(Date.now()).getTime() + (7*24*60*60000))
+        players: newPlayers()
     };
     Game.create(defaultState,function(err,result)
     {

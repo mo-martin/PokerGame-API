@@ -100,15 +100,14 @@ function getHandValue(PlayerHand, BoardHand,callback)
     for(var c in BoardHand)
         mergedhand.push(BoardHand[c]);
     mergedhand.push(PlayerHand[0],PlayerHand[1]);
-    console.log(mergedhand);
     var value = 0;
     // we keep separate instances of both hands for the special cases in checks
-       value = testRoyalFlush(mergedhand);
-       console.log(value);
+       value = testRoyalFlush(PlayerHand, BoardHand);
+    //    console.log(value);
     if(value != 0 )
         return callback(value);
 
-    if(testRoyalFlush(mergedhand)) return testRoyalFlush(mergedhand);
+    // if(testRoyalFlush(mergedhand)) return testRoyalFlush(mergedhand);
 
     value = testStraightFlush(mergedhand);
     //console.log(value);
@@ -122,7 +121,7 @@ function getHandValue(PlayerHand, BoardHand,callback)
     //console.log(value);
     if(value != 0 )
         return callback(value);        
-    value = testFlush(mergedhand);
+    value = testFlush(PlayerHand, BoardHand);
     //console.log(value);
     if(value != 0 )
         return callback(value);        
@@ -149,11 +148,14 @@ function getHandValue(PlayerHand, BoardHand,callback)
 function testRoyalFlush(PlayerHand, BoardHand)
 {
     var hand = [];
-    hand.concat(PlayerHand);
-    hand.concat(BoardHand);
+    for(var c in BoardHand)
+        hand.push(BoardHand[c]);
+    hand.push(PlayerHand[0],PlayerHand[1]);
     var suitcounter = 0;
     // first we need to sort by suit
-    hand.sort(function(a,b){a.suit.localeCompare('b')});
+    //console.log(hand);
+    hand.sort(function(a,b){return a.suit > b.suit ? -1 : 1; });
+    console.log(hand);
     // check if it is a flush
     for(var i = 0 ; i < hand.length-1; ++i)
     {
@@ -173,6 +175,7 @@ function testRoyalFlush(PlayerHand, BoardHand)
             return 10; 
         }
     }
+    return 0;
 }
 // incomplete
 function testStraightFlush(hand)
@@ -225,11 +228,12 @@ function testFullHouse(hand)
 function testFlush(PlayerHand, BoardHand)
 {
     var hand = [];
-    hand.concat(PlayerHand);
-    hand.concat(BoardHand);
+    for(var c in BoardHand)
+        hand.push(BoardHand[c]);
+    hand.push(PlayerHand[0],PlayerHand[1]);
     var suitcounter = 0;
     // first we need to sort by suit
-    hand.sort(function(a,b){a.suit.localeCompare('b')});
+    hand.sort(function(a,b){return a.suit > b.suit ? -1 : 1; });
     // check if it is a flush
     for(var i = 0 ; i < hand.length-1; ++i)
     {

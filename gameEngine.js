@@ -92,47 +92,65 @@ function getWinner(GameID)
     });
     // we need to find any side pots,
 }
-function getHandValue(PlayerHand, BoardHand)
+function getHandValue(PlayerHand, BoardHand,callback)
 {
-    var mergedhand = PlayerHand + BoardHand;
+    var mergedhand = [];
+    // mergedhand = PlayerHand;
+    // mergedhand.concat(BoardHand);
+    for(var c in BoardHand)
+        mergedhand.push(BoardHand[c]);
+    mergedhand.push(PlayerHand[0],PlayerHand[1]);
+    console.log(mergedhand);
     var value = 0;
     // we keep separate instances of both hands for the special cases in checks
        value = testRoyalFlush(mergedhand);
+       console.log(value);
     if(value != 0 )
-        return value;
+        return callback(value);
 
     if(testRoyalFlush(mergedhand)) return testRoyalFlush(mergedhand);
 
     value = testStraightFlush(mergedhand);
+    //console.log(value);
     if(value != 0 )
-        return value;        
+        return callback(value);        
     value = test4ofKind(mergedhand);
+    //console.log(value);
     if(value != 0 )
-        return value;        
+        return callback(value);        
     value = testFullHouse(mergedhand);
+    //console.log(value);
     if(value != 0 )
-        return value;        
+        return callback(value);        
     value = testFlush(mergedhand);
+    //console.log(value);
     if(value != 0 )
-        return value;        
+        return callback(value);        
     value = testStraight(mergedhand);
+    //console.log(value);
     if(value != 0 )
-        return value;        
+        return callback(value);        
     value = test3ofKind(mergedhand);
+    //console.log(value);
     if(value != 0 )
-        return value;        
+        return callback(value);        
     value = test2Pair(mergedhand);
+   // console.log(value);
     if(value != 0 )
-        return value;        
+        return callback(value);        
     value = testPair(mergedhand);
+    //console.log(value);
     if(value != 0 )
-        return value;
+        return callback(value);
     return testHighCard(mergedhand);
+    //console.log(value);
 }
 // complete - needs test
 function testRoyalFlush(PlayerHand, BoardHand)
 {
-    var hand = PlayerHand + BoardHand;
+    var hand = [];
+    hand.concat(PlayerHand);
+    hand.concat(BoardHand);
     var suitcounter = 0;
     // first we need to sort by suit
     hand.sort(function(a,b){a.suit.localeCompare('b')});
@@ -206,7 +224,9 @@ function testFullHouse(hand)
 // complete - need testing
 function testFlush(PlayerHand, BoardHand)
 {
-    var hand = PlayerHand + BoardHand;
+    var hand = [];
+    hand.concat(PlayerHand);
+    hand.concat(BoardHand);
     var suitcounter = 0;
     // first we need to sort by suit
     hand.sort(function(a,b){a.suit.localeCompare('b')});

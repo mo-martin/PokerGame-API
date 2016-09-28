@@ -85,9 +85,9 @@ it('should shuffle the deck on /Deck/:id/shuffle GET', function(done) {
         // and that it's json
         res.should.be.json;
 
-        res.body.should.have.property('_id');
-        res.body._id.should.be.a('string');
-        expect(res.body).to.contain.keys("_id");
+        expect(res.body).to.contain.keys('_id');
+        expect(res.body._id).to.be.a('string');
+        expect(JSON.stringify(res.body._id)).to.equal(JSON.stringify(testId));
 
         done();
     });

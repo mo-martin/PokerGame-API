@@ -100,45 +100,35 @@ function getHandValue(PlayerHand, BoardHand,callback)
     for(var c in BoardHand)
         mergedhand.push(BoardHand[c]);
     mergedhand.push(PlayerHand[0],PlayerHand[1]);
-    console.log(mergedhand);
     var value = 0;
+    
     // we keep separate instances of both hands for the special cases in checks
-    value = testStraightFlush(PlayerHand, BoardHand);
-    console.log(value);
-    if(value != 0 )
-        return callback(value);        
+    if(testStraightFlush(PlayerHand, BoardHand) != 0 )
+        return callback(testStraightFlush(PlayerHand, BoardHand));      
     value = test4ofKind(mergedhand);
-    //console.log(value);
     if(value != 0 )
-        return callback(value);        
+        return callback(value);
     value = testFullHouse(mergedhand);
-    //console.log(value);
     if(value != 0 )
-        return callback(value);        
+        return callback(value);
     value = testFlush(PlayerHand, BoardHand);
-    //console.log(value);
     if(value != 0 )
         return callback(value);        
     value = testStraight(mergedhand);
-    //console.log(value);
     if(value != 0 )
         return callback(value);        
     value = test3ofKind(mergedhand);
-    //console.log(value);
     if(value != 0 )
         return callback(value);        
     value = test2Pair(mergedhand);
-   // console.log(value);
     if(value != 0 )
         return callback(value);        
     value = testPair(mergedhand);
-    //console.log(value);
     if(value != 0 )
         return callback(value);
     return testHighCard(mergedhand);
-    //console.log(value);
 }
-// complete - needs test
+// complete
 function testStraightFlush(PlayerHand, BoardHand)
 {
     var hand = [];
@@ -147,9 +137,7 @@ function testStraightFlush(PlayerHand, BoardHand)
     hand.push(PlayerHand[0],PlayerHand[1]);
     var suitcounter = 0;
     // first we need to sort by suit
-    //console.log(hand);
     hand.sort(function(a,b){return a.suit > b.suit ? -1 : 1; });
-    console.log(hand);
     // check if it is a flush
     for(var i = 0 ; i < hand.length-1; ++i)
     {
@@ -180,7 +168,7 @@ function testStraightFlush(PlayerHand, BoardHand)
     }
     return 0;
 }
-// complete - needs test
+// complete
 function test4ofKind(hand)
 {
     for(var i = 0; i < hand.length-3; ++i)
@@ -189,35 +177,40 @@ function test4ofKind(hand)
                 for(var k = p+1; k < hand.length; ++k )
                     if(hand[i].value == hand[j].value && hand[j].value == hand[p].value && hand[p].value == hand[k].value)
                     {
-                        hand.splice(i,4);
-                        var k = testHighCard(hand)/10000;
                         var HC = getCardValue(hand[i])/100;
+                        hand.splice(i,1);
+                        hand.splice(j,1);
+                        hand.splice(p,1);
+                        hand.splice(k,1);
+                        var k = testHighCard(hand)/10000;
+
                         return 8+HC+k;
                     }
+    return 0;
 }
 // complete
 function testFullHouse(hand)
 {
     var scores = [];
     var threefound = false;
-
     hand.sort(function(a,b){return a.value>b.value  ? 1 : -1});
     for(var i = 0; i < hand.length-2; ++i)
         if(hand[i].value == hand[i+1].value && hand[i+1].value == hand[i+2].value)
         {
-            scores.splice(i,3);
+            
             threefound = true;
+            var K = getCardValue(hand[i])/100;
+            hand.splice(i,3);
             break;
         }
-
+        
     if(!threefound)
         return 0;
-    for(var i =0; i < scores.length; ++i)
-        if(scores[i] == scores[i+1])
-        {
-            hand.splice(i,2);
-            var HC = testHighCard(hand)/100;
-            return 8+HC;    
+    for(var i =0; i < hand.length-1; ++i)
+        if(hand[i].value == hand[i+1].value)
+        {            
+            var T = getCardValue(hand[i])/10000;
+            return 8+K+T;    
         }
     return 0;
 }
@@ -240,7 +233,14 @@ function testFlush(PlayerHand, BoardHand)
             suitcounter=0;
         if(suitcounter==4)
         {
-            return 6 + testHighCard(PlayerHand)/100; 
+            for(var j = 0 ; j < PlayerHand.length; ++j)
+                if(hand[i].suit != PlayerHand[j].suit)
+                {
+
+                    PlayerHand.splice(j,1);
+                    j--;
+                }
+            return 6 + testHighCard(BoardHand)/100 + testHighCard(PlayerHand)/10000; 
         }
     }
     //then we need the highest value card of suit from player hand
@@ -263,9 +263,7 @@ function testStraight(hand)
     var scores = [];
     for(var i = 0; i < hand.length; ++i)
         scores.push(getCardValue(hand[i]));
-    console.log(scores);
     scores.sort(function(a,b){return a>b  ? -1 : 1});
-    console.log(scores);
     var straightCounter = 0;
     for(var i = 0 ; i < hand.length-1; ++i)
     {

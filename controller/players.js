@@ -6,7 +6,7 @@ function fold(req, res) {
 	//find game
 	Game.findById(req.params.gameId, function(err, game) {
 		//update player
-		game.players[req.params.playerId].hasFolded = true;
+		game.players[req.params.playerId-1].hasFolded = true;
 		//update game in database
 		game.save(function(err, savedGame) {
 				if (err) console.log(err);
@@ -20,7 +20,7 @@ function bet(req, res) {
 	//find game
 	Game.findById(req.params.gameId, function(err, game) {
 		//update player
-		game.players[req.params.playerId].bet = req.params.bet;
+		game.players[req.params.playerId-1].bet = req.params.bet;
 		//update game in database
 		game.save(function(err, savedGame) {
 				if (err) console.log(err);

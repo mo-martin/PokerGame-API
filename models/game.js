@@ -17,11 +17,14 @@ var GameSchema = new mongoose.Schema(
     boardPile: {type: Array, default: []},
     pot : {type : Number, required : true, default: 0},
     curBet : {type : Number, required : true, default: 0},
-    updatedAt: {type: Date, expires: 60*60*20, default: Date.now }
+    updatedAt: {type: Date},
+    expiresAt: {type: Date}
 });
 
+GameSchema.index({ "expiresAt": 1 }, { expireAfterSeconds: 0 });
+
 GameSchema.pre("save", function(next) { 
-    this.updatedAt = new Date(); 
+    this.updatedAt = new Date();
     next(); 
 });
 

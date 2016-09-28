@@ -16,7 +16,13 @@ var GameSchema = new mongoose.Schema(
     burnPile: {type: Array, default: []},
     boardPile: {type: Array, default: []},
     pot : {type : Number, required : true, default: 0},
-    curBet : {type : Number, required : true, default: 0}
+    curBet : {type : Number, required : true, default: 0},
+    updatedAt: {type: Date, expires: 60*60*20, default: Date.now }
+});
+
+GameSchema.pre("save", function(next) { 
+    this.updatedAt = new Date(); 
+    next(); 
 });
 
 module.exports = mongoose.model("Game",GameSchema);

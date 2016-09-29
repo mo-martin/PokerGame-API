@@ -1,6 +1,6 @@
 var Game = require('./models/game');
 
-dealCards = function(id, callback) {
+function dealCards(id, callback) {
 	//uses game state to deal cards
 	Game.findById(id, function(err, game) {
 		if (err) console.log(err);
@@ -46,7 +46,7 @@ dealCards = function(id, callback) {
 	});
 }
 
-dealToPlayers = function(game) {
+function dealToPlayers(game) {
 	//for each player
 	for (var i = 0; i < 5; i++) {
 		//pop two cards from the deck and push them to the player hand
@@ -55,7 +55,7 @@ dealToPlayers = function(game) {
 	}
 }
 
-dealToBoard = function(game, number) {
+function dealToBoard(game, number) {
 	//burn card
 	game.burnPile.push(game.deck.pop());
 	//add a number of cards to board pile

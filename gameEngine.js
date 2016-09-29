@@ -3,6 +3,7 @@ var Game = require('./models/game');
 dealCards = function(id, callback) {
 	//uses game state to deal cards
 	Game.findById(id, function(err, game) {
+        var data;
 		if (err) console.log(err);
 		switch(game.gameState) {
 			case 1:
@@ -26,13 +27,20 @@ dealCards = function(id, callback) {
 			case 4:
 				//deal the river
 				dealToBoard(game, 1);
+                game.gameState = 5;
 				//find winner
 				//reset game
 				break;
+            case 5:
+                console.log("hit case 5");
+                getWinner(game,function(res){data = res;});
+                break;
 			default:
 				//if db validation works this state is unreachable
 				console.log("game state error");
 		};
+        if(game.gameState == 5)
+            return callback(data);
 		//update database
 		game.save(function(err, gameSaved) {
 			if (err) console.log(err);
@@ -79,92 +87,112 @@ function takeBet(BetInfo)
 }
 function payWinner(GameID,PlayerID,Amount)
 {
+    console.log(PlayerID);
     Game.findById(PlayerID, function(err,result){
-        result.cash += Amount;
+        result.chips += Amount;
         console.log("Player "+PlayerID.toString()+"Paid "+Amount);
     });
 
 }
-function getWinner(GameID)
+function getWinner(game,callback)
 {
     var handStrength = [];
-    Game.findById(GameID,function(err,result){
-        var winningData = [];
-        var SidePotAllocated = 0;
-        var SidePotPaid = 0 ;
-        //load winning data
-        for(var i = 0; i < result.players.length; ++i)
-            if(!result.players[i].hasFolded)
-                winningData.push(
-                    {PlayerID : i ,
-                    handStrength : getHandValue(result.players[i].hand,result.boardPile)});
-        
-        //now we sort based on hand strength
-        winningData.sort(function(a,b){return a.handStrength > b.handStrength ? -1 : 1});
-        
-        while(result.players[winningData[0].PlayerID].bet < result.curBet)
+    var winningData = [];
+    var SidePotAllocated = 0;
+    var SidePotPaid = 0;
+    var returnData = [];
+    //load winning data
+    console.log("Start Get Hand Values Function");
+    for(var i = 0; i < game.players.length; ++i)
+        if(!game.players[i].hasFolded)
         {
-            //this main winner is part of a side pot we need to remove them and do it again
-            // we need to work out how much of the pot they are eligble for
-            // they get their bet times remaining players
-            payWinner(GameID,players[winningData[0].PlayerID].id,winningData.length * (result.players[winningData[0].PlayerID].bet - SidePotAllocated));
-            SidePotAllocated+= winningData.length * (result.players[winningData[0].PlayerID].bet - SidePotAllocated);
-            winningData.shift();
-        }
-        // now we payout to the winner
-        result.pot-=SidePotAllocated;
-        payWinner(GameID,result.players[winningData[0].PlayerID].id,result.pot);
-    });
-    // we need to find any side pots,
-}
-function getHandValue(PlayerHand, BoardHand,callback)
+            console.log("Hand value: ");
+            console.log(getHandValue(game.players[i].hand, game.boardPile));
+            //winningData.push({PlayerID : i ,handStrength : getHandValue(game.players[i].hand , game.boardPile)});
+        };
+    console.log("End Get Hand Values")
+
+
+    // console.log("winning data =  " +winningData[0].handStrength);
+    //now we sort based on hand strength
+    winningData.sort(function(a,b){return a.handStrength > b.handStrength ? -1 : 1});
+    console.log("winning data =  " +winningData);
+
+    while(game.players[winningData[0].PlayerID].bet < game.curBet)
+    {
+        //this main winner is part of a side pot we need to remove them and do it again
+        // we need to work out how much of the pot they are eligble for
+        // they get their bet times remaining players
+        var potWon = winningData.length * (game.players[winningData[0].PlayerID].bet - SidePotAllocated);
+        returnData.push({
+            Player: winningData[0].PlayerID,
+            WinAmount: potWon});
+
+        payWinner(game.id,players[winningData[0].PlayerID].id,potWon);
+        SidePotAllocated+= potWon;
+        winningData.shift();
+    }
+    // now we payout to the winner
+    game.pot-=SidePotAllocated;
+    payWinner(game.id,game.players[winningData[0].PlayerID].id,game.pot);
+    returnData.push({
+        Player: winningData[0].PlayerID,
+        WinAmount: game.pot});
+    console.log(returnData);
+    callback (returnData);
+} 
+function getHandValue(PlayerHand, BoardHand)
 {
     var mergedhand = [];
     // mergedhand = PlayerHand;
     // mergedhand.concat(BoardHand);
-    console.log(mergedhand);
-    for(var c in BoardHand)
-        mergedhand.push(BoardHand[c]);
+    for(var i = 0 ; i < BoardHand.length; ++i)
+        mergedhand.push(BoardHand[i]);
     mergedhand.push(PlayerHand[0],PlayerHand[1]);
-    console.log(mergedhand);
+     console.log("Merged Hand : ")
+     console.log(mergedhand);
     var value = 0;
-    
     // we keep separate instances of both hands for the special cases in checks
+    console.log("StraightFlush test")
     if(testStraightFlush(PlayerHand, BoardHand) != 0 )
-        return callback(testStraightFlush(PlayerHand, BoardHand));      
-    value = test4ofKind(mergedhand.slice(0));
+        return (testStraightFlush(PlayerHand, BoardHand))
+    console.log("test4ofKind test")    
+    value = test4ofKind(mergedhand);
     if(value != 0 )
-        return callback(value);
-    value = testFullHouse(mergedhand.slice(0));
+        return (value);
+    console.log("testFullHouse test")
+    value = testFullHouse(mergedhand);
     if(value != 0 )
-        return callback(value);
-        console.log(mergedhand);    
+        return (value);
+    console.log("testFlush test")
     value = testFlush(PlayerHand, BoardHand);
     if(value != 0 )
-        return callback(value);
-        console.log(mergedhand.slice(0));           
-    value = testStraight(mergedhand.slice(0));
+        return (value);
+    console.log("testStraight test")
+    value = testStraight(mergedhand);
     if(value != 0 )
-        return callback(value);
-        console.log(mergedhand.slice(0));    
-    value = test3ofKind(mergedhand.slice(0));
+        return (value);
+    console.log("test3ofKind test")
+    value = test3ofKind(mergedhand);
     if(value != 0 )
-        return callback(value);        
-    value = test2Pair(mergedhand.slice(0));
+        return (value);        
+    console.log("test2Pair test")
+    value = test2Pair(mergedhand);
     if(value != 0 )
-        return callback(value);        
-    value = testPair(mergedhand.slice(0));
+        return (value);        
+    console.log("testPair test")
+    value = testPair(mergedhand);
     if(value != 0 )
-        return callback(value);
-    console.log("high card");
-    return callback(1+testHighCard(mergedhand.slice(0))/100);
+        return (value);
+    return (1+testHighCard(mergedhand)/100);
 }
 // complete
 function testStraightFlush(PlayerHand, BoardHand)
 {
     var hand = [];
-    for(var c in BoardHand)
-        hand.push(BoardHand[c]);
+    var returnVal = 0;
+    for(var i = 0 ; i < BoardHand.length; ++i)
+        hand.push(BoardHand[i]);
     hand.push(PlayerHand[0],PlayerHand[1]);
     var suitcounter = 0;
     // first we need to sort by suit
@@ -179,6 +207,7 @@ function testStraightFlush(PlayerHand, BoardHand)
         if(suitcounter==4)
         {
             var correctsuit = hand[i].suit;
+            //console.log(hand);
             for(var j = 0; j < hand.length; ++j)
             {
                 if(hand[j].suit != correctsuit)
@@ -190,39 +219,41 @@ function testStraightFlush(PlayerHand, BoardHand)
             }
             // if it is a straight , its royal
             if(testStraight(hand) == 5.14)
-                return 10;
+            {
+                console.log("royalFlushHit");
+                returnVal = 10;
+            }
             else if (testStraight(hand) != 0)
-                return testStraight(hand)+4;
+            {
+                console.log("StraightFlushHit");
+                returnVal =  testStraight(hand)+4;
+            }
             else
-                return 0;
+                returnVal =  0;
         }
     }
-    return 0;
+    return returnVal;
 }
 // complete
 function test4ofKind(hand)
 {
+    var returnVal = 0;
+    hand.sort(function(a,b){return a.value > b.value ? 1 : -1});
     for(var i = 0; i < hand.length-3; ++i)
-        for(var j = i+1; j < hand.length-2; ++j)
-            for(var p = j+1; p < hand.length-1; ++p )
-                for(var k = p+1; k < hand.length; ++k )
-                    if(hand[i].value == hand[j].value && hand[j].value == hand[p].value && hand[p].value == hand[k].value)
-                    {
-                        var HC = getCardValue(hand[i])/100;
-                        hand.splice(i,1);
-                        hand.splice(j,1);
-                        hand.splice(p,1);
-                        hand.splice(k,1);
-                        var k = testHighCard(hand)/10000;
-
-                        return 8+HC+k;
-                    }
-    return 0;
+        if(hand[i].value === hand[i+1].value && hand[i+1].value === hand[i+2].value && hand[i+2].value === hand[i+3].value) {
+            var HC = getCardValue(hand[i])/100;
+            hand.splice(i,4);
+            var k = testHighCard(hand)/10000;
+            returnVal =  8+HC+k;
+            console.log("4ofKindHit");
+        }
+    return returnVal;
 }
 // complete
 function testFullHouse(hand)
 {
     var scores = [];
+    var returnVal = 0;
     var threefound = false;
     hand.sort(function(a,b){return a.value>b.value  ? 1 : -1});
     for(var i = 0; i < hand.length-2; ++i)
@@ -235,22 +266,25 @@ function testFullHouse(hand)
             break;
         }
         
-    if(!threefound)
-        return 0;
-    for(var i =0; i < hand.length-1; ++i)
-        if(hand[i].value == hand[i+1].value)
-        {            
-            var T = getCardValue(hand[i])/10000;
-            return 7+K+T;    
-        }
-    return 0;
+    if(threefound)
+    {
+        for(var i =0; i < hand.length-1; ++i)
+            if(hand[i].value == hand[i+1].value)
+            {            
+                var T = getCardValue(hand[i])/10000;
+                returnVal =  7+K+T; 
+                console.log("fullhouseHit");   
+            }
+    }
+    return returnVal;
 }
 // complete - need testing
 function testFlush(PlayerHand, BoardHand)
 {
     var hand = [];
-    for(var c in BoardHand)
-        hand.push(BoardHand[c]);
+    var returnVal = 0;
+    for(var i = 0 ; i < BoardHand.length; ++i)
+        hand.push(BoardHand[i]);
     hand.push(PlayerHand[0],PlayerHand[1]);
     var suitcounter = 0;
     // first we need to sort by suit
@@ -271,14 +305,16 @@ function testFlush(PlayerHand, BoardHand)
                     PlayerHand.splice(j,1);
                     j--;
                 }
-            return 6 + testHighCard(BoardHand)/100 + testHighCard(PlayerHand)/10000; 
+                console.log("flushHit");
+            returnVal =  6 + testHighCard(BoardHand)/100 + testHighCard(PlayerHand)/10000; 
         }
     }
-    return 0;
+    return returnVal;
 }
 // complete
 function testStraight(hand)
 {
+    var returnVal = 0;
     hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
     var straightCounter = 0;
     for(var i = 0 ; i < hand.length-1; ++i)
@@ -287,58 +323,84 @@ function testStraight(hand)
             straightCounter++;
         else
             straightCounter=0;
-        console.log(straightCounter);
         if(straightCounter == 4)
         {
             var HC = getCardValue(hand[i-3])/100;
-            return 5 + HC;
+            returnVal =  5 + HC;
+            console.log("StraightHit");
         }
     }
-    return 0;
+    return returnVal;
 }
 // complete
 function test3ofKind(hand)
 {
-    console.log("3ofKind");
+    var returnVal = 0;
     hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
-    console.log(hand);
      for(var i = 0; i < hand.length-2; ++i)
      {
         if(hand[i].value == hand[i+1].value && hand[i+1].value == hand[i+2].value)
         {
             var HC = getCardValue(hand[i])/100;
             hand.splice(i,3);
-            return 4+HC+getHandValue(hand)/10000;    
+            console.log("3ofKindHit");
+            returnVal =  4+HC+getHandValue(hand)/10000;    
         }
      }
-    console.log("3ofKindFaild");
-    return 0;
+    return returnVal;
 }
 // complete
 function test2Pair(hand)
 {
     var HC = 0;
+    var K = 0;
+    var returnVal = 0;
     var pairincre = 0;
+    hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
     for(var i = 0; i < hand.length-1; ++i)
-        for(var j = i+1; j < hand.length; ++j)
-            if(hand[i].value == hand[j].value)
-               {
-                   pairincre++;
-                   if(testHighCard([hand[i],hand[i+1]])/100 > HC)
-                        HC = testHighCard([hand[i],hand[i+1]])/100;
-                   if(pairincre == 2)
-                        return 3+HC;
-               }
-    return 0;
+        if(hand[i].value == hand[i+1].value)
+            {
+                console.log("pre2pairhit");
+                pairincre++;
+                if(testHighCard([hand[i],hand[i+1]])/100 > HC)
+                {
+                    if(HC!= 0 )
+                    {
+                        K=HC/100;
+                    }
+                    HC = testHighCard([hand[i],hand[i+1]])/100;
+                }
+                else
+                    K = testHighCard([hand[i],hand[i+1]])/10000;
+                    
+                if(pairincre == 2)
+                {
+                    console.log("2pairhit");
+                    console.log(HC);
+                    console.log(K);
+                    returnVal =  3+HC+K;
+                }
+            }
+    return returnVal;
 }
 // complete
 function testPair(hand)
 {
+    var returnVal = 0;
+    var HC,K = 0;
+    hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
     for(var i = 0; i < hand.length-1; ++i)
-        for(var j = i+1; j < hand.length; ++j)
-            if(hand[i].value == hand[j].value)
-                return 2 + getCardValue(hand[i])/100;
-    return 0;
+        if(hand[i].value == hand[i+1].value)
+        {
+            console.log("pairhit");
+            HC = getCardValue(hand[i])/100;
+            hand.splice(i,2);
+            K = testHighCard(hand)/10000;
+            console.log(HC);
+            console.log(K);
+            returnVal =  2 + HC+K;
+        }
+    return returnVal;
 }
 // complete
 function getCardValue(card)
@@ -354,7 +416,6 @@ function testHighCard(hand)
     for(var i =0 ; i < hand.length; i++)
         if(getCardValue(hand[i]) > highvalue )
             highvalue = (getCardValue(hand[i]));
-    console.log(highvalue);
     return highvalue;
 }
 

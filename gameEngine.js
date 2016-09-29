@@ -77,18 +77,43 @@ function takeBet(BetInfo)
         result.pot += BetInfo.bet;
     });
 }
+function payWinner(GameID,PlayerID,Amount)
+{
+    Game.findById(PlayerID, function(err,result){
+        result.cash += Amount;
+        console.log("Player "+PlayerID.toString()+"Paid "+Amount);
+    });
+
+}
 function getWinner(GameID)
 {
     var handStrength = [];
     Game.findById(GameID,function(err,result){
-        var baseHand = result.boardPile;
+        var winningData = [];
+        var SidePotAllocated = 0;
+        var SidePotPaid = 0 ;
+        //load winning data
         for(var i = 0; i < result.players.length; ++i)
+            if(!result.players[i].hasFolded)
+                winningData.push(
+                    {PlayerID : i ,
+                    handStrength : getHandValue(result.players[i].hand,result.boardPile)});
+        
+        //now we sort based on hand strength
+        winningData.sort(function(a,b){return a.handStrength > b.handStrength ? -1 : 1});
+        
+        while(result.players[winningData[0].PlayerID].bet < result.curBet)
         {
-            if(result.players[i].action == "fold")
-                handStrength.push(0);
-            else
-                handStrength(getHandValue(result.players[i].hand,result.boardPile));
+            //this main winner is part of a side pot we need to remove them and do it again
+            // we need to work out how much of the pot they are eligble for
+            // they get their bet times remaining players
+            payWinner(GameID,players[winningData[0].PlayerID].id,winningData.length * (result.players[winningData[0].PlayerID].bet - SidePotAllocated));
+            SidePotAllocated+= winningData.length * (result.players[winningData[0].PlayerID].bet - SidePotAllocated);
+            winningData.shift();
         }
+        // now we payout to the winner
+        result.pot-=SidePotAllocated;
+        payWinner(GameID,result.players[winningData[0].PlayerID].id,result.pot);
     });
     // we need to find any side pots,
 }

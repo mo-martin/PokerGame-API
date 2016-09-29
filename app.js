@@ -12,7 +12,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(router);
 
-mongoose.connect('mongodb://localhost/Poker', function(){
+mongoose.connect('mongodb://192.10.10.200/Poker', function(){
   console.log("Database connected");
 });
 //post body parser

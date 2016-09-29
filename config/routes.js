@@ -11,7 +11,11 @@ router.route('/Deck/:id/shuffle').get(gameController.shuffle);
 
 //player controller
 router.route('/game/:gameId/player/:playerId/fold').get(playerController.fold);
-router.route('/game/:gameId/player/:playerId/:bet').get(playerController.bet);
+
+router.route('/game/:gameId/player/:playerId/ai').get(playerController.aiMove);
+
+router.route('/game/:gameId/player/:playerId/bet/:bet').get(playerController.bet);
+
 
 router.route('/Test/winConditions').post(gameController.testCard)
 

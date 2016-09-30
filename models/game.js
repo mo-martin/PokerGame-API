@@ -11,7 +11,7 @@ var PlayerSchema = new mongoose.Schema({
 var GameSchema = new mongoose.Schema(
 {
     deck: {type : Array, required : true},
-    gameState: {type: Number, min: 1, max: 4, default: 1},
+    gameState: {type: Number, min: 1, max: 5, default: 1},
     players: [PlayerSchema],
     burnPile: {type: Array, default: []},
     boardPile: {type: Array, default: []},

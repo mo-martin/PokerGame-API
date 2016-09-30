@@ -16,6 +16,7 @@ router.route('/game/:gameId/player/:playerId/ai').get(playerController.aiMove);
 
 router.route('/game/:gameId/player/:playerId/bet/:bet').get(playerController.bet);
 
+router.route('/game/:gameId/reset').get(gameController.reset);
 
 router.route('/Test/winConditions').post(gameController.testCard)
 

@@ -121,10 +121,7 @@ function createCards()
 }
 function testCardValues(req,res)
 {
-    gameEngine.HandValue(req.body.Phand,req.body.Dhand,function(data){
-        res.status(202).json(data);
-    });
-
+    console.log(gameEngine.HandValue(req.body.Phand,req.body.Dhand));
 }
 
 function getCards(req, res) {

@@ -206,22 +206,22 @@ function testStraightFlush(PlayerHand, BoardHand)
         hand.push(BoardHand[i]);
     hand.push(PlayerHand[0],PlayerHand[1]);
     var suitcounter = 0;
-    // first we need to sort by suit
-    hand.sort(function(a,b){return a.suit > b.suit ? -1 : 1; });
+    // first we need to sort by Suit
+    hand.sort(function(a,b){return a.Suit > b.Suit ? -1 : 1; });
     // check if it is a flush
     for(var i = 0 ; i < hand.length-1; ++i)
     {
-        if(hand[i].suit == hand[i+1].suit)
+        if(hand[i].Suit == hand[i+1].Suit)
             suitcounter++;
         else
             suitcounter=0;
         if(suitcounter==4)
         {
-            var correctsuit = hand[i].suit;
+            var correctsuit = hand[i].Suit;
             //console.log(hand);
             for(var j = 0; j < hand.length; ++j)
             {
-                if(hand[j].suit != correctsuit)
+                if(hand[j].Suit != correctsuit)
                 {
                     hand.splice(j,1);
                     j--;
@@ -249,9 +249,9 @@ function testStraightFlush(PlayerHand, BoardHand)
 function test4ofKind(hand)
 {
     var returnVal = 0;
-    hand.sort(function(a,b){return a.value > b.value ? 1 : -1});
+    hand.sort(function(a,b){return a.Value > b.Value ? 1 : -1});
     for(var i = 0; i < hand.length-3; ++i)
-        if(hand[i].value === hand[i+1].value && hand[i+1].value === hand[i+2].value && hand[i+2].value === hand[i+3].value) {
+        if(hand[i].Value === hand[i+1].Value && hand[i+1].Value === hand[i+2].Value && hand[i+2].Value === hand[i+3].Value) {
             var HC = getCardValue(hand[i])/100;
             hand.splice(i,4);
             var k = testHighCard(hand)/10000;
@@ -266,9 +266,9 @@ function testFullHouse(hand)
     var scores = [];
     var returnVal = 0;
     var threefound = false;
-    hand.sort(function(a,b){return a.value>b.value  ? 1 : -1});
+    hand.sort(function(a,b){return a.Value>b.Value  ? 1 : -1});
     for(var i = 0; i < hand.length-2; ++i)
-        if(hand[i].value == hand[i+1].value && hand[i+1].value == hand[i+2].value)
+        if(hand[i].Value == hand[i+1].Value && hand[i+1].Value == hand[i+2].Value)
         {
             
             threefound = true;
@@ -280,7 +280,7 @@ function testFullHouse(hand)
     if(threefound)
     {
         for(var i =0; i < hand.length-1; ++i)
-            if(hand[i].value == hand[i+1].value)
+            if(hand[i].Value == hand[i+1].Value)
             {            
                 var T = getCardValue(hand[i])/10000;
                 returnVal =  7+K+T; 
@@ -298,19 +298,19 @@ function testFlush(PlayerHand, BoardHand)
         hand.push(BoardHand[i]);
     hand.push(PlayerHand[0],PlayerHand[1]);
     var suitcounter = 0;
-    // first we need to sort by suit
-    hand.sort(function(a,b){return a.suit > b.suit ? -1 : 1; });
+    // first we need to sort by Suit
+    hand.sort(function(a,b){return a.Suit > b.Suit ? -1 : 1; });
     // check if it is a flush
     for(var i = 0 ; i < hand.length-1; ++i)
     {
-        if(hand[i].suit == hand[i+1].suit)
+        if(hand[i].Suit == hand[i+1].Suit)
             suitcounter++;
         else
             suitcounter=0;
         if(suitcounter==4)
         {
             for(var j = 0 ; j < PlayerHand.length; ++j)
-                if(hand[i].suit != PlayerHand[j].suit)
+                if(hand[i].Suit != PlayerHand[j].Suit)
                 {
 
                     PlayerHand.splice(j,1);
@@ -330,7 +330,7 @@ function testStraight(hand)
     var straightCounter = 0;
     for(var i = 0 ; i < hand.length-1; ++i)
     {
-        if(hand[i].value == (hand[i+1].value+1))
+        if(hand[i].Value == (hand[i+1].Value+1))
             straightCounter++;
         else
             straightCounter=0;
@@ -350,7 +350,7 @@ function test3ofKind(hand)
     hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
      for(var i = 0; i < hand.length-2; ++i)
      {
-        if(hand[i].value == hand[i+1].value && hand[i+1].value == hand[i+2].value)
+        if(hand[i].Value == hand[i+1].Value && hand[i+1].Value == hand[i+2].Value)
         {
             var HC = getCardValue(hand[i])/100;
             hand.splice(i,3);
@@ -369,7 +369,7 @@ function test2Pair(hand)
     var pairincre = 0;
     hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
     for(var i = 0; i < hand.length-1; ++i)
-        if(hand[i].value == hand[i+1].value)
+        if(hand[i].Value == hand[i+1].Value)
             {
                 console.log("pre2pairhit");
                 pairincre++;
@@ -401,7 +401,7 @@ function testPair(hand)
     var HC,K = 0;
     hand.sort(function(a,b){return getCardValue(a)>getCardValue(b)  ? -1 : 1});
     for(var i = 0; i < hand.length-1; ++i)
-        if(hand[i].value == hand[i+1].value)
+        if(hand[i].Value == hand[i+1].Value)
         {
             console.log("pairhit");
             HC = getCardValue(hand[i])/100;
@@ -416,9 +416,10 @@ function testPair(hand)
 // complete
 function getCardValue(card)
 {
-    if(card.value == 1)
+    console.log(card.Value);
+    if(card.Value == 1)
         return 14;
-    return card.value;
+    return card.Value;
 }
 // complete
 function testHighCard(hand)

@@ -81,6 +81,7 @@ function payWinner(GameID,PlayerID,Amount)
 {
     Game.findById(PlayerID, function(err,result){
         result.cash += Amount;
+        result.save();
         console.log("Player "+PlayerID.toString()+"Paid "+Amount);
     });
 

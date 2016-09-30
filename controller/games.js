@@ -138,11 +138,34 @@ function getCards(req, res) {
     });
 }
 
+function resetDeck(req, res) {
+    //run twice to reset all cards
+    Game.findById(req.params.gameId, function(err, result) {
+        if (err) console.log(err);
+        for (var i = 0; i < result.burnPile.length; i++) {
+            result.deck.push(result.burnPile.pop());
+        }
+        for (var i = 0; i < result.boardPile.length; i++) {
+            result.deck.push(result.boardPile.pop());
+        }
+        for (var i = 0; i < result.players.length; i++) {
+            result.deck.push(result.players[i].hand.pop());
+            result.deck.push(result.players[i].hand.pop());
+        }
+        result.gameState = 1;
+        result.save(function(err, saved) {
+            if (err) console.log(err);
+            res.status(200).json('deck reset');
+        });
+    });
+}
+
 module.exports =
 {
     create : newGame,
     shuffle : shuffleDeck,
     deal : deckDealCards,
     testCard : testCardValues,
-    getCards: getCards
+    getCards: getCards,
+    reset: resetDeck
 }

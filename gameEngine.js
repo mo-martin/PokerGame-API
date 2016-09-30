@@ -88,8 +88,9 @@ function takeBet(BetInfo)
 function payWinner(GameID,PlayerID,Amount)
 {
     console.log(PlayerID);
-    Game.findById(PlayerID, function(err,result){
-        result.chips += Amount;
+    Game.findById(GameID, function(err,result){
+        if(err) console.log(err);
+        result.players[PlayerID].chips += Amount;
         console.log("Player "+PlayerID.toString()+"Paid "+Amount);
     });
 
@@ -106,9 +107,7 @@ function getWinner(game,callback)
     for(var i = 0; i < game.players.length; ++i)
         if(!game.players[i].hasFolded)
         {
-            console.log("Hand value: ");
-            console.log(getHandValue(game.players[i].hand, game.boardPile));
-            //winningData.push({PlayerID : i ,handStrength : getHandValue(game.players[i].hand , game.boardPile)});
+            winningData.push({PlayerID : i ,handStrength : getHandValue(game.players[i].hand , game.boardPile)});
         };
     console.log("End Get Hand Values")
 
@@ -116,29 +115,42 @@ function getWinner(game,callback)
     // console.log("winning data =  " +winningData[0].handStrength);
     //now we sort based on hand strength
     winningData.sort(function(a,b){return a.handStrength > b.handStrength ? -1 : 1});
-    console.log("winning data =  " +winningData);
+    console.log("winning data =  ") 
+    console.log(winningData);
+    console.log("Start Paying Out Monies");
 
+    console.log(game.players[winningData[0].PlayerID].bet );
+    var totalSidePotAllocated = 0;
     while(game.players[winningData[0].PlayerID].bet < game.curBet)
     {
+        console.log("Start Side Pot Calcs");
         //this main winner is part of a side pot we need to remove them and do it again
         // we need to work out how much of the pot they are eligble for
         // they get their bet times remaining players
         var potWon = winningData.length * (game.players[winningData[0].PlayerID].bet - SidePotAllocated);
+        console.log(game.players[winningData[0].PlayerID].bet );
+        console.log("Pot Won :");
+        console.log(potWon);
         returnData.push({
             Player: winningData[0].PlayerID,
             WinAmount: potWon});
-
-        payWinner(game.id,players[winningData[0].PlayerID].id,potWon);
-        SidePotAllocated+= potWon;
+        
+        payWinner(game.id,game.players[winningData[0].PlayerID].id,potWon);
+        SidePotAllocated = game.players[winningData[0].PlayerID].bet;
+        totalSidePotAllocated +=potWon;
         winningData.shift();
+        console.log("End Side Pot Calcs");
     }
+    console.log("Start Main Pot Calcs");
     // now we payout to the winner
-    game.pot-=SidePotAllocated;
+    console.log(game.pot);
+    game.pot-=totalSidePotAllocated;
     payWinner(game.id,game.players[winningData[0].PlayerID].id,game.pot);
     returnData.push({
         Player: winningData[0].PlayerID,
         WinAmount: game.pot});
     console.log(returnData);
+    console.log("FINISHED !!!!!!!!!!");
     callback (returnData);
 } 
 function getHandValue(PlayerHand, BoardHand)
@@ -417,31 +429,6 @@ function testHighCard(hand)
         if(getCardValue(hand[i]) > highvalue )
             highvalue = (getCardValue(hand[i]));
     return highvalue;
-}
-
-function payOut(winnerData)
-{
-    //get an integer with which player won
-    if(winnerData.winners.length == 1 )
-    {
-        // only one winner
-        Game.findById(winnerData.gameID, function(err,result){
-            result.players[winnerData.winners[0]].cash += result.pot;
-            endRound(winnerData.gameID);
-        });
-    }
-    else
-    {
-         //special payout conditions
-         //need to check for an all in bet / we check that in the get winner function
-         //if all in bet is not as high as the others , then cap their payout
-         Game.findById(winnerData.gameID,function(err,result){
-             for(var i = 0; i < winnerData.winners.length;++i)
-             {
-                 result.players[winnerData.winners[0]].bet
-             }
-         });
-    }
 }
 function endRound(gameID)
 {

@@ -67,7 +67,9 @@ describe('Deck', function() {
 		  deck: [{suit: 'test', value: 1}, {suit: 'test', value: 1}],
           boardPile : [{suit:'H',value:1},{suit:'D',value:1},{suit:'H',value:8},{suit:'D',value:13},{suit:'H',value:2}],
 		  players: testPlayers,
-          gameState: 5
+          gameState: 5,
+          curBet: 500,
+          pot: 2550
 		};
 		Game.create(defaultState,function(err,result) {
 			testId = result._id;
@@ -99,9 +101,17 @@ describe('Deck', function() {
         // and that it's json
         res.should.be.json;
         //console.log(res.body);
-        expect(res.body).to.contain.keys('Player');
-        expect(res.body._id).to.be.a('string');
-        //expect(JSON.stringify(res.body._id)).to.equal(JSON.stringify(testId));
+        // expect(res.body).to.contain.keys('Player');
+        // expect(res.body._id).to.be.a('string');
+        Game.findById(testId,function(err,result)
+        {
+            expect(Game.findById(testId).players[0].chips).to.equal(6500);
+            expect(Game.findById(testId).players[1].chips).to.equal(5250);
+            expect(Game.findById(testId).players[2].chips).to.equal(5800);
+            expect(Game.findById(testId).players[3].chips).to.equal(4500);
+            expect(Game.findById(testId).players[4].chips).to.equal(4500);
+            expect(Game.findById(testId).players[5].chips).to.equal(4500);
+        });
 
         done();
     });

@@ -416,7 +416,6 @@ function testPair(hand)
 // complete
 function getCardValue(card)
 {
-    console.log(card.Value);
     if(card.Value == 1)
         return 14;
     return card.Value;

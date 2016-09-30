@@ -134,7 +134,7 @@ function getWinner(game,callback)
             Player: winningData[0].PlayerID,
             WinAmount: potWon});
         
-        payWinner(game.id,game.players[winningData[0].PlayerID].id,potWon);
+        payWinner(game.id,winningData[0].PlayerID,potWon);
         SidePotAllocated = game.players[winningData[0].PlayerID].bet;
         totalSidePotAllocated +=potWon;
         winningData.shift();
@@ -144,7 +144,7 @@ function getWinner(game,callback)
     // now we payout to the winner
     console.log(game.pot);
     game.pot-=totalSidePotAllocated;
-    payWinner(game.id,game.players[winningData[0].PlayerID].id,game.pot);
+    payWinner(game.id,winningData[0].PlayerID,game.pot);
     returnData.push({
         Player: winningData[0].PlayerID,
         WinAmount: game.pot});

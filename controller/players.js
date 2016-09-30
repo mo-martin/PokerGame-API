@@ -22,6 +22,7 @@ function bet(req, res) {
 	Game.findById(req.params.gameId, function(err, game) {
 		//update player
 		game.players[req.params.playerId-1].bet = req.params.bet;
+		game.pot += req.params.bet;
 		//update game in database
 		game.save(function(err, savedGame) {
 				if (err) console.log(err);

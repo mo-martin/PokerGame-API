@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nathn123/PokerGame-API.git"
+    "url": "git+https://github.com/mo-martin/PokerGame-API"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nathn123/PokerGame-API/issues"
+    "url": "https://github.com/mo-martin/PokerGame-API/issues"
   },
-  "homepage": "https://github.com/nathn123/PokerGame-API#readme",
+  "homepage": "https://github.com/mo-martin/PokerGame-API#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
     "cors": "^2.8.1",
